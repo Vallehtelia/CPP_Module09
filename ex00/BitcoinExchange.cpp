@@ -3,7 +3,6 @@
 
 BitcoinExchange::BitcoinExchange()
 {
-	std::cout << "BitcoinExchange constructor" << std::endl;
 	loadDatabase("data.csv");
 }
 
@@ -23,7 +22,6 @@ BitcoinExchange &BitcoinExchange::operator=(BitcoinExchange const &other)
 
 BitcoinExchange::~BitcoinExchange()
 {
-	std::cout << "BitcoinExchange deconstructor" << std::endl;
 }
 
 void BitcoinExchange::loadDatabase(const std::string& filename)
@@ -101,26 +99,32 @@ void BitcoinExchange::processInputFile(const std::string& filename)
 			size_t cepPos = buffer.find('|');
 			if (cepPos == std::string::npos)
 			{
-				std::cerr << "Error: bad format in inputfile -> " << buffer << std::endl;
+				std::cerr << "Error: bad format in inputfile -> " << buffer << ". Needs value!" << std::endl;
 				continue;
 			}
 
 			std::string date = trim(buffer.substr(0, cepPos));
-
+			if (!validateFormat(date))
+			{
+				std::cerr << "Error: bad input => " + date << std::endl;
+				continue;
+			}
 			std::string valueStr = trim(buffer.substr(cepPos + 1));
 
 			try
 			{
 				float value = std::stof(valueStr);
-				if (value < 0 || value > 1000)
-					throw std::runtime_error("Error: value is out of bounds!\nValue should be between 0 and 1000.");
+				if (value < 0)
+					throw std::runtime_error("Error: not a positive number.");
+				else if(value > 100)
+					throw std::runtime_error("Error: too large a number.");
 
 				std::string foundDate = getClosestLowerDate(date);
-				std::cout << "closest date: " << foundDate << std::endl;
+				std::cout << date << " => " << value << " = " << (database[foundDate] * value) << std::endl;
 			}
 			catch (const std::exception &e)
 			{
-				std::cerr << e.what() << "\nValue is -> " << buffer << "\n\n";
+				std::cerr << e.what() << '\n';
 			}
 		}
 		file.close();
@@ -151,6 +155,32 @@ void	BitcoinExchange::printMap()
 		std::cout << i.first << " \t\t\t " << i.second << std::endl;
 	}
 }
+
+bool	validateFormat(const std::string &date)
+{
+    if (date.size() != 10 || date[4] != '-' || date[7] != '-')
+        return false;
+
+    std::istringstream yearStream(date.substr(0, 4));
+    std::istringstream monthStream(date.substr(5, 2));
+    std::istringstream dayStream(date.substr(8, 2));
+
+    int year, month, day;
+    if (!(yearStream >> year) || !(monthStream >> month) || !(dayStream >> day))
+        return false;
+
+    if (year < 1000 || year > 9999 || month < 1 || month > 12 || day < 1)
+        return false;
+
+    const int daysInMonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+    if (day > daysInMonth[month - 1])
+        return false;
+
+    return true;
+}
+
+
 
 std::string trim(const std::string &str)
 {

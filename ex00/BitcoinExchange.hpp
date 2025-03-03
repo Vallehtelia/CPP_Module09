@@ -6,6 +6,7 @@
 #include <exception>
 #include <map>
 #include <string>
+#include <sstream>
 
 class BitcoinExchange
 {
@@ -27,3 +28,4 @@ public:
 };
 
 std::string trim(const std::string &str);
+bool	validateFormat(const std::string &date);
