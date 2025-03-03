@@ -24,7 +24,6 @@ public:
 	void loadDatabase(const std::string& filename);
     void processInputFile(const std::string& filename);
 	std::string getClosestLowerDate(const std::string& inputDate);
-	void printMap();
 };
 
 std::string trim(const std::string &str);

@@ -3,7 +3,14 @@
 
 BitcoinExchange::BitcoinExchange()
 {
-	loadDatabase("data.csv");
+	try
+	{
+		loadDatabase("data.csv");
+	}
+	catch (const std::exception &e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
 }
 
 BitcoinExchange::BitcoinExchange(BitcoinExchange const &other)
@@ -116,7 +123,7 @@ void BitcoinExchange::processInputFile(const std::string& filename)
 				float value = std::stof(valueStr);
 				if (value < 0)
 					throw std::runtime_error("Error: not a positive number.");
-				else if(value > 100)
+				else if(value > 1000)
 					throw std::runtime_error("Error: too large a number.");
 
 				std::string foundDate = getClosestLowerDate(date);
@@ -142,18 +149,10 @@ std::string BitcoinExchange::getClosestLowerDate(const std::string& inputDate)
     if (it != database.end() && it->first == inputDate)
         return it->first;
 
-    if (it != database.begin())
-        return std::prev(it)->first;
+    if (it == database.begin())
+        throw std::runtime_error("Error: No lower date found for " + inputDate);;
 
-    throw std::runtime_error("Error: No lower date found for " + inputDate);
-}
-
-void	BitcoinExchange::printMap()
-{
-	for (auto i : this->database)
-	{
-		std::cout << i.first << " \t\t\t " << i.second << std::endl;
-	}
+    return std::prev(it)->first;
 }
 
 bool	validateFormat(const std::string &date)
